@@ -1,0 +1,9 @@
+streamlit
+streamlit-lottie
+pandas
+numpy
+pydeck
+requests
+git add requirements.txt
+git commit -m "Add streamlit-lottie to requirements"
+git push
