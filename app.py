@@ -31,18 +31,31 @@ def generate_vehicle_data(num):
     return data
 
 # Function to simulate cyberattacks
-def simulate_cyber_attack(data):
+def simulate_cyber_attack():
+    data = st.session_state.vehicle_data.copy()
     attack_types = ["SQL Injection", "Spoofing Attack", "DoS Attack", "Malware Injection"]
     num_attacks = random.randint(1, len(data) // 10)
     attack_indices = random.sample(range(len(data)), num_attacks)
     for idx in attack_indices:
         data.at[idx, 'Status'] = random.choice(attack_types)
-    return data
+    st.session_state.vehicle_data = data
+    st.warning("Cyberattack simulated!")
 
 # Function to activate IDPS
-def activate_idps_system(data):
+def activate_idps_system():
+    data = st.session_state.vehicle_data
     detected_attacks = data[data['Status'] != 'Normal']
-    return detected_attacks
+    if not detected_attacks.empty:
+        st.session_state.vsoc_alerts = detected_attacks[['Vehicle ID', 'Status']]
+        st.error(f"{len(detected_attacks)} attacks detected!")
+    else:
+        st.success("No attacks detected.")
+
+# Function to initiate OTA update
+def initiate_ota_update():
+    with st.spinner('Deploying OTA Update...'):
+        time.sleep(2)
+        st.success("OTA Update Deployed Successfully!")
 
 # Generate initial vehicle data if not already generated
 if st.session_state.vehicle_data.empty:
@@ -70,36 +83,10 @@ r = pdk.Deck(
 )
 st.pydeck_chart(r)
 
-# Simulate cyberattack
-if st.button("Simulate Cyberattack"):
-    st.session_state.vehicle_data = simulate_cyber_attack(st.session_state.vehicle_data)
-    st.warning("Cyberattack simulated!")
-
-    # Activate IDPS
-    detected_attacks = activate_idps_system(st.session_state.vehicle_data)
-    if not detected_attacks.empty:
-        st.error(f"{len(detected_attacks)} attacks detected!")
-
-        # Update VSOC Alerts in session state
-        st.session_state.vsoc_alerts = detected_attacks[['Vehicle ID', 'Status']]
-
-        # Display VSOC Alerts
-        st.subheader("📡 VSOC Alerts")
-        st.dataframe(st.session_state.vsoc_alerts)
-
-        # OTA Updates Visualization
-        if st.button("Initiate OTA Update"):
-            with st.spinner('Deploying OTA Update...'):
-                time.sleep(2)
-                st.success("OTA Update Deployed Successfully!")
-
-        # IDPS Rule Set Update
-        if st.button("Update IDPS Rule Set"):
-            with st.spinner('Updating IDPS Rule Set...'):
-                time.sleep(2)
-                st.success("IDPS Rule Set Updated Successfully!")
-    else:
-        st.success("No attacks detected.")
+# Buttons for actions
+st.sidebar.button("Simulate Cyberattack", on_click=simulate_cyber_attack)
+st.sidebar.button("Activate IDPS", on_click=activate_idps_system)
+st.sidebar.button("Initiate OTA Update", on_click=initiate_ota_update)
 
 # Display VSOC Alerts if they exist
 if not st.session_state.vsoc_alerts.empty:
