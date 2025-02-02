@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import time
 import random
-from datetime import datetime
 
 # Set up the Streamlit page configuration
 st.set_page_config(page_title="Global Vehicle IDPS Dashboard", layout="wide")
@@ -12,78 +11,62 @@ st.markdown("**A demonstration of real-time vehicle monitoring, cyber attack det
 
 # Sidebar: User Inputs
 st.sidebar.header("User Inputs")
-num_vehicles = st.sidebar.number_input("Number of Vehicles", min_value=1, max_value=1000, value=5)
-simulate_attack = st.sidebar.checkbox("Simulate Cyber Attack")
+num_vehicles = st.sidebar.slider("Number of Vehicles", min_value=10, max_value=1000, value=100, step=10)
+simulate_attack = st.sidebar.button("Simulate Cyber Attack")
+activate_idps = st.sidebar.button("Activate IDPS")
+initiate_ota = st.sidebar.button("Initiate OTA Update")
 
-# Function to simulate vehicle data
+# Function to generate random vehicle data
 def generate_vehicle_data(num):
-    vehicle_data = pd.DataFrame({
-        "Vehicle ID": [f"V-{i}" for i in range(1, num + 1)],
-        "Country": random.choices(["USA", "Germany", "India", "China", "Brazil"], k=num),
-        "Speed (km/h)": np.random.randint(50, 150, size=num),
-        "RPM": np.random.randint(1000, 6000, size=num),
-        "Status": ["Normal"] * num
+    data = pd.DataFrame({
+        'latitude': np.random.uniform(-90, 90, num),
+        'longitude': np.random.uniform(-180, 180, num),
+        'Vehicle ID': [f"V-{i}" for i in range(1, num + 1)],
+        'Status': ['Normal'] * num
     })
-    return vehicle_data
-
-# Function to simulate anomalies
-def introduce_anomalies(data):
-    num_anomalies = random.randint(1, len(data))
-    anomaly_indices = random.sample(range(len(data)), num_anomalies)
-    for idx in anomaly_indices:
-        data.at[idx, "Status"] = "Anomalous"
     return data
 
-# Main Dashboard
-if st.button("Run Simulation"):
-    with st.spinner('Running simulation...'):
-        # Generate vehicle data
-        vehicle_data = generate_vehicle_data(num_vehicles)
-        
-        # Simulate cyber attack if checkbox is selected
-        if simulate_attack:
-            vehicle_data = introduce_anomalies(vehicle_data)
-            st.error("🚨 Cyber Attack Detected!")
-            st.info("Alert sent to VSOC for further analysis.")
-        
-        # Display Real-Time Vehicle Data
-        st.header("🚘 Real-Time Vehicle Data")
-        st.dataframe(vehicle_data, width=700)
-        
-        # Display Detected Anomalies
-        st.header("⚠️ Detected Anomalies")
-        anomalies = vehicle_data[vehicle_data["Status"] == "Anomalous"]
-        if not anomalies.empty:
-            st.warning(f"{len(anomalies)} anomalies detected globally.")
-            st.dataframe(anomalies)
-        else:
-            st.success("No anomalies detected.")
-        
-        # Incident Timeline
-        st.header("🕒 Incident Timeline")
-        timeline_data = [
-            {"Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Event": "Vehicles Connected to IDPS"},
-            {"Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Event": "Cyber Attack Detected" if simulate_attack else "No Cyber Attack"},
-            {"Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Event": "Anomalies Sent to VSOC" if simulate_attack else "No Anomalies"},
-            {"Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Event": "OTA Update Deployed"},
-            {"Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Event": "Quantum Security Integration Planned"},
-        ]
-        timeline_df = pd.DataFrame(timeline_data)
-        st.table(timeline_df)
-        
-        # OTA Update Deployment
-        st.header("🚀 OTA Update Deployment")
-        st.info("Deploying OTA Update to Secure All Vehicles...")
+# Function to simulate cyber attacks
+def simulate_cyber_attack(data):
+    attack_types = ["SQL Injection", "Spoofing Attack", "DoS Attack", "Malware Injection"]
+    num_attacks = random.randint(1, len(data) // 10)
+    attack_indices = random.sample(range(len(data)), num_attacks)
+    for idx in attack_indices:
+        data.at[idx, 'Status'] = random.choice(attack_types)
+    return data
+
+# Function to activate IDPS
+def activate_idps_system(data):
+    detected_attacks = data[data['Status'] != 'Normal']
+    return detected_attacks
+
+# Generate initial vehicle data
+vehicle_data = generate_vehicle_data(num_vehicles)
+
+# Display the map with vehicle locations
+st.header("🌍 Vehicle Locations")
+st.map(vehicle_data[['latitude', 'longitude']])
+
+# Simulate cyber attack if button is pressed
+if simulate_attack:
+    vehicle_data = simulate_cyber_attack(vehicle_data)
+    st.warning("Cyber attack simulated!")
+
+# Activate IDPS if button is pressed
+if activate_idps:
+    detected_attacks = activate_idps_system(vehicle_data)
+    if not detected_attacks.empty:
+        st.error(f"{len(detected_attacks)} attacks detected!")
+        st.dataframe(detected_attacks)
+        st.info("Alerts sent to VSOC for further analysis.")
+    else:
+        st.success("No attacks detected.")
+
+# Initiate OTA update if button is pressed
+if initiate_ota:
+    with st.spinner('Deploying OTA Update...'):
         time.sleep(2)
-        st.success("✅ OTA Update Deployed Successfully!")
-        
-        # Quantum Security Integration
-        st.header("🔒 Quantum Security Integration")
-        st.info("Integrating Quantum Technology for Enhanced Security...")
-        time.sleep(2)
-        st.success("🔒 Quantum Security Successfully Integrated!")
-else:
-    st.info("Click the 'Run Simulation' button to start the IDPS demo.")
+        st.success("OTA Update Deployed Successfully!")
 
 # Footer
 st.markdown("---")
