@@ -41,25 +41,14 @@ def activate_idps_system(data):
 # Generate initial vehicle data
 vehicle_data = generate_vehicle_data(num_vehicles)
 
-# Display the map with vehicle locations using custom car icons
+# Display the map with vehicle locations as red dots
 st.header("🌍 Vehicle Locations")
-icon_url = "https://img.icons8.com/ios-filled/50/000000/car.png"
-icon_data = {
-    "url": icon_url,
-    "width": 242,
-    "height": 242,
-    "anchorY": 242
-}
-vehicle_data['icon_data'] = None
-for i in vehicle_data.index:
-    vehicle_data.at[i, 'icon_data'] = icon_data
 vehicle_layer = pdk.Layer(
-    type="IconLayer",
+    'ScatterplotLayer',
     data=vehicle_data,
-    get_icon="icon_data",
-    get_size=4,
-    size_scale=15,
-    get_position=["longitude", "latitude"],
+    get_position='[longitude, latitude]',
+    get_fill_color='[255, 0, 0, 160]',
+    get_radius=200000,
     pickable=True
 )
 view_state = pdk.ViewState(
@@ -83,19 +72,16 @@ if st.button("Simulate Cyberattack"):
     detected_attacks = activate_idps_system(vehicle_data)
     if not detected_attacks.empty:
         st.error(f"{len(detected_attacks)} attacks detected!")
-        st.dataframe(detected_attacks)
 
         # VSOC Alerts Section
         st.subheader("📡 VSOC Alerts")
-        for idx, attack in detected_attacks.iterrows():
-            st.write(f"Alert: {attack['Vehicle ID']} under {attack['Status']} attack detected.")
+        st.dataframe(detected_attacks[['Vehicle ID', 'Status']])
 
         # OTA Updates Visualization
         if st.button("Initiate OTA Update"):
             with st.spinner('Deploying OTA Update...'):
                 time.sleep(2)
                 st.success("OTA Update Deployed Successfully!")
-                st.image("https://example.com/satellite_image.png", caption="OTA Update Transmission via Satellite")
 
         # IDPS Rule Set Update
         if st.button("Update IDPS Rule Set"):
