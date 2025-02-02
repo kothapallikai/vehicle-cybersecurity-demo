@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import time
 import random
+import time
 
 # Set up the Streamlit page configuration
 st.set_page_config(page_title="Global Vehicle IDPS Dashboard", layout="wide")
@@ -12,9 +12,6 @@ st.markdown("**A demonstration of real-time vehicle monitoring, cyber attack det
 # Sidebar: User Inputs
 st.sidebar.header("User Inputs")
 num_vehicles = st.sidebar.slider("Number of Vehicles", min_value=10, max_value=1000, value=100, step=10)
-simulate_attack = st.sidebar.button("Simulate Cyber Attack")
-activate_idps = st.sidebar.button("Activate IDPS")
-initiate_ota = st.sidebar.button("Initiate OTA Update")
 
 # Function to generate random vehicle data
 def generate_vehicle_data(num):
@@ -48,12 +45,12 @@ st.header("🌍 Vehicle Locations")
 st.map(vehicle_data[['latitude', 'longitude']])
 
 # Simulate cyber attack if button is pressed
-if simulate_attack:
+if st.button("Simulate Cyber Attack"):
     vehicle_data = simulate_cyber_attack(vehicle_data)
     st.warning("Cyber attack simulated!")
 
 # Activate IDPS if button is pressed
-if activate_idps:
+if st.button("Activate IDPS"):
     detected_attacks = activate_idps_system(vehicle_data)
     if not detected_attacks.empty:
         st.error(f"{len(detected_attacks)} attacks detected!")
@@ -63,7 +60,7 @@ if activate_idps:
         st.success("No attacks detected.")
 
 # Initiate OTA update if button is pressed
-if initiate_ota:
+if st.button("Initiate OTA Update"):
     with st.spinner('Deploying OTA Update...'):
         time.sleep(2)
         st.success("OTA Update Deployed Successfully!")
