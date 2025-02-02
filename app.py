@@ -7,7 +7,7 @@ import time
 # Set up the Streamlit page configuration
 st.set_page_config(page_title="Global Vehicle IDPS Dashboard", layout="wide")
 st.title("🚗 Global Vehicle Cybersecurity Simulation Dashboard")
-st.markdown("**A demonstration of real-time vehicle monitoring, cyber attack detection, and prevention with IDPS and Quantum Security Integration**")
+st.markdown("**A demonstration of real-time vehicle monitoring, cyber attack detection, prevention with IDPS, and OTA updates**")
 
 # Sidebar: User Inputs
 st.sidebar.header("User Inputs")
@@ -44,22 +44,20 @@ vehicle_data = generate_vehicle_data(num_vehicles)
 st.header("🌍 Vehicle Locations")
 st.map(vehicle_data[['latitude', 'longitude']])
 
-# Simulate cyber attack if button is pressed
-if st.button("Simulate Cyber Attack"):
-    vehicle_data = simulate_cyber_attack(vehicle_data)
-    st.warning("Cyber attack simulated!")
+# Simulate cyber attack
+vehicle_data = simulate_cyber_attack(vehicle_data)
+st.warning("Cyber attack simulated!")
 
-# Activate IDPS if button is pressed
-if st.button("Activate IDPS"):
-    detected_attacks = activate_idps_system(vehicle_data)
-    if not detected_attacks.empty:
-        st.error(f"{len(detected_attacks)} attacks detected!")
-        st.dataframe(detected_attacks)
-        st.info("Alerts sent to VSOC for further analysis.")
-    else:
-        st.success("No attacks detected.")
+# Activate IDPS
+detected_attacks = activate_idps_system(vehicle_data)
+if not detected_attacks.empty:
+    st.error(f"{len(detected_attacks)} attacks detected!")
+    st.dataframe(detected_attacks)
+    st.info("Alerts sent to VSOC for further analysis.")
+else:
+    st.success("No attacks detected.")
 
-# Initiate OTA update if button is pressed
+# Initiate OTA update
 if st.button("Initiate OTA Update"):
     with st.spinner('Deploying OTA Update...'):
         time.sleep(2)
@@ -67,4 +65,4 @@ if st.button("Initiate OTA Update"):
 
 # Footer
 st.markdown("---")
-st.markdown("**Developed for showcasing global vehicle cybersecurity monitoring and prevention using advanced IDPS and quantum technology.**")
+st.markdown("**Developed for showcasing global vehicle cybersecurity monitoring and prevention using advanced IDPS technology.**")
