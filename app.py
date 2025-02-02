@@ -1,8 +1,22 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import pydeck as pdk
 import random
 import time
+from streamlit_lottie import st_lottie
+import requests
+
+# Function to load Lottie animations from a URL
+def load_lottie_url(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+# Load Lottie animations
+satellite_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_j1adxtyb.json")
+alert_animation = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_tutvdkg0.json")
 
 # Set up the Streamlit page configuration
 st.set_page_config(page_title="Global Vehicle IDPS Dashboard", layout="wide")
@@ -40,9 +54,35 @@ def activate_idps_system(data):
 # Generate initial vehicle data
 vehicle_data = generate_vehicle_data(num_vehicles)
 
-# Display the map with vehicle locations
+# Display the map with vehicle locations using custom car icons
 st.header("🌍 Vehicle Locations")
-st.map(vehicle_data[['latitude', 'longitude']])
+icon_url = "https://img.icons8.com/ios-filled/50/000000/car.png"
+icon_data = {
+    "url": icon_url,
+    "width": 242,
+    "height": 242,
+    "anchorY": 242
+}
+vehicle_layer = pdk.Layer(
+    type="IconLayer",
+    data=vehicle_data,
+    get_icon="icon_data",
+    get_size=4,
+    size_scale=15,
+    get_position=["longitude", "latitude"],
+    pickable=True
+)
+view_state = pdk.ViewState(
+    latitude=0,
+    longitude=0,
+    zoom=1
+)
+r = pdk.Deck(
+    layers=[vehicle_layer],
+    initial_view_state=view_state,
+    tooltip={"text": "{Vehicle ID}"}
+)
+st.pydeck_chart(r)
 
 # Simulate cyber attack
 vehicle_data = simulate_cyber_attack(vehicle_data)
@@ -54,11 +94,13 @@ if not detected_attacks.empty:
     st.error(f"{len(detected_attacks)} attacks detected!")
     st.dataframe(detected_attacks)
     st.info("Alerts sent to VSOC for further analysis.")
+    st_lottie(alert_animation, height=200, key="alert")
 else:
     st.success("No attacks detected.")
 
 # Initiate OTA update
 if st.button("Initiate OTA Update"):
+    st_lottie(satellite_animation, height=300, key="satellite")
     with st.spinner('Deploying OTA Update...'):
         time.sleep(2)
         st.success("OTA Update Deployed Successfully!")
