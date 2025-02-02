@@ -6,9 +6,9 @@ import random
 import time
 
 # Set up the Streamlit page configuration
-st.set_page_config(page_title="VicOne xCarbon and xNexus Demo", layout="wide")
-st.title("🚗 VicOne xCarbon and xNexus Simulation Dashboard")
-st.markdown("**Demonstration of real-time vehicle monitoring, cyberattack detection, IDPS activation, VSOC alerts, and OTA updates**")
+st.set_page_config(page_title="IDPS Demo Dashboard", layout="wide")
+st.title("🚗 Intrusion Detection and Prevention System (IDPS) Demo Dashboard")
+st.markdown("**Real-time vehicle monitoring, cyberattack detection, IDPS activation, VSOC alerts, and OTA updates**")
 
 # Sidebar: User Inputs
 st.sidebar.header("User Inputs")
@@ -52,7 +52,7 @@ icon_data = {
 }
 vehicle_data['icon_data'] = None
 for i in vehicle_data.index:
-    vehicle_data['icon_data'][i] = icon_data
+    vehicle_data.at[i, 'icon_data'] = icon_data
 vehicle_layer = pdk.Layer(
     type="IconLayer",
     data=vehicle_data,
@@ -84,16 +84,27 @@ if st.button("Simulate Cyberattack"):
     if not detected_attacks.empty:
         st.error(f"{len(detected_attacks)} attacks detected!")
         st.dataframe(detected_attacks)
-        st.info("Alerts sent to VSOC for further analysis.")
+
+        # VSOC Alerts Section
+        st.subheader("📡 VSOC Alerts")
+        for idx, attack in detected_attacks.iterrows():
+            st.write(f"Alert: {attack['Vehicle ID']} under {attack['Status']} attack detected.")
+
+        # OTA Updates Visualization
+        if st.button("Initiate OTA Update"):
+            with st.spinner('Deploying OTA Update...'):
+                time.sleep(2)
+                st.success("OTA Update Deployed Successfully!")
+                st.image("https://example.com/satellite_image.png", caption="OTA Update Transmission via Satellite")
+
+        # IDPS Rule Set Update
+        if st.button("Update IDPS Rule Set"):
+            with st.spinner('Updating IDPS Rule Set...'):
+                time.sleep(2)
+                st.success("IDPS Rule Set Updated Successfully!")
     else:
         st.success("No attacks detected.")
 
-# Initiate OTA update
-if st.button("Initiate OTA Update"):
-    with st.spinner('Deploying OTA Update...'):
-        time.sleep(2)
-        st.success("OTA Update Deployed Successfully!")
-
 # Footer
 st.markdown("---")
-st.markdown("**Developed to showcase the capabilities of VicOne's xCarbon and xNexus solutions.**")
+st.markdown("**Developed to demonstrate an advanced IDPS with real-time monitoring and response capabilities.**")
