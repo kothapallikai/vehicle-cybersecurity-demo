@@ -10,6 +10,12 @@ st.set_page_config(page_title="IDPS Demo Dashboard", layout="wide")
 st.title("🚗 Intrusion Detection and Prevention System (IDPS) Demo Dashboard")
 st.markdown("**Real-time vehicle monitoring, cyberattack detection, IDPS activation, VSOC alerts, and OTA updates**")
 
+# Initialize session state for vehicle data and alerts
+if 'vehicle_data' not in st.session_state:
+    st.session_state.vehicle_data = pd.DataFrame()
+if 'vsoc_alerts' not in st.session_state:
+    st.session_state.vsoc_alerts = pd.DataFrame()
+
 # Sidebar: User Inputs
 st.sidebar.header("User Inputs")
 num_vehicles = st.sidebar.slider("Number of Vehicles", min_value=10, max_value=500, value=100, step=10)
@@ -38,14 +44,15 @@ def activate_idps_system(data):
     detected_attacks = data[data['Status'] != 'Normal']
     return detected_attacks
 
-# Generate initial vehicle data
-vehicle_data = generate_vehicle_data(num_vehicles)
+# Generate initial vehicle data if not already generated
+if st.session_state.vehicle_data.empty:
+    st.session_state.vehicle_data = generate_vehicle_data(num_vehicles)
 
 # Display the map with vehicle locations as red dots
 st.header("🌍 Vehicle Locations")
 vehicle_layer = pdk.Layer(
     'ScatterplotLayer',
-    data=vehicle_data,
+    data=st.session_state.vehicle_data,
     get_position='[longitude, latitude]',
     get_fill_color='[255, 0, 0, 160]',
     get_radius=200000,
@@ -65,17 +72,20 @@ st.pydeck_chart(r)
 
 # Simulate cyberattack
 if st.button("Simulate Cyberattack"):
-    vehicle_data = simulate_cyber_attack(vehicle_data)
+    st.session_state.vehicle_data = simulate_cyber_attack(st.session_state.vehicle_data)
     st.warning("Cyberattack simulated!")
 
     # Activate IDPS
-    detected_attacks = activate_idps_system(vehicle_data)
+    detected_attacks = activate_idps_system(st.session_state.vehicle_data)
     if not detected_attacks.empty:
         st.error(f"{len(detected_attacks)} attacks detected!")
 
-        # VSOC Alerts Section
+        # Update VSOC Alerts in session state
+        st.session_state.vsoc_alerts = detected_attacks[['Vehicle ID', 'Status']]
+
+        # Display VSOC Alerts
         st.subheader("📡 VSOC Alerts")
-        st.dataframe(detected_attacks[['Vehicle ID', 'Status']])
+        st.dataframe(st.session_state.vsoc_alerts)
 
         # OTA Updates Visualization
         if st.button("Initiate OTA Update"):
@@ -90,6 +100,11 @@ if st.button("Simulate Cyberattack"):
                 st.success("IDPS Rule Set Updated Successfully!")
     else:
         st.success("No attacks detected.")
+
+# Display VSOC Alerts if they exist
+if not st.session_state.vsoc_alerts.empty:
+    st.subheader("📡 VSOC Alerts")
+    st.dataframe(st.session_state.vsoc_alerts)
 
 # Footer
 st.markdown("---")
